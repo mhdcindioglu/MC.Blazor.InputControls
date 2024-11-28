@@ -1,20 +1,25 @@
 ﻿@using System.Diagnostics.CodeAnalysis
 @using System.Globalization
+@using Microsoft.AspNetCore.Components.Forms
 @typeparam TValue
 @inherits InputBase<TValue>
+@inject IJSRuntime JS 
 @if (editing)
 {
-    <input @bind-value="@Value" type="number" class="form-control" @onblur="EndEditing" />
+    <input @ref="@inputElement" @bind-value="@Value" type="number" class="form-control" @onblur="EndEditing" id="@id"   />
 }
 else
 {
-    <div @onclick="StartEditing" class="form-control">@(string.Format(Value.ToString(), Format))</div>
+    <span @onclick="StartEditing" class="form-control">@FormatValueAsString(Value)</span>
 }
 
 
 @code {
+    string id = Guid.NewGuid().ToString();
     [Parameter] public string? Format { get; set; } = "N2";
-
+    [Parameter] public string CurrencySymbol { get; set; } = "TL";//"₺";
+    public string ID => id;
+    ElementReference inputElement;
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
     /// </summary>
@@ -49,38 +54,37 @@ else
     /// <returns>A string representation of the value.</returns>
     protected override string? FormatValueAsString(TValue? value)
     {
-        // Avoiding a cast to IFormattable to avoid boxing.
+        var culture = CultureInfo.CurrentCulture;
         switch (value)
         {
             case null:
                 return null;
 
             case int @int:
-                return BindConverter.FormatValue(@int, CultureInfo.InvariantCulture);
+                return Convert.ToInt32(@int, culture).ToString(Format);
 
             case long @long:
-                return BindConverter.FormatValue(@long, CultureInfo.InvariantCulture);
+                return Convert.ToInt64(@long, culture).ToString(Format);
 
             case short @short:
-                return BindConverter.FormatValue(@short, CultureInfo.InvariantCulture);
-
-            case float @float:
-                return BindConverter.FormatValue(@float, CultureInfo.InvariantCulture);
+                return Convert.ToInt16(@short, culture).ToString(Format);
 
             case double @double:
-                return BindConverter.FormatValue(@double, CultureInfo.InvariantCulture);
+                return Convert.ToDouble(@double, culture).ToString(Format);
 
             case decimal @decimal:
-                return BindConverter.FormatValue(@decimal, CultureInfo.InvariantCulture);
+                return Convert.ToDecimal(@decimal, culture).ToString(Format);
 
             default:
                 throw new InvalidOperationException($"Unsupported type {value.GetType()}");
         }
     }
 
-    void StartEditing()
+    async Task StartEditing()
     {
         editing = true;
+        await Task.Delay(100);
+        await JS.InvokeVoidAsync("selectAll", id);
     }
 
     void EndEditing()

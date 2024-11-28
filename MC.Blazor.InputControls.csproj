@@ -13,6 +13,7 @@
     <PackageTags>blazor;component;input;controls;</PackageTags>
     <RepositoryUrl>https://github.com/mhdcindioglu/MC.Blazor.InputControls</RepositoryUrl>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <Title>MC.Blazor.InputControls</Title>
   </PropertyGroup>
   <ItemGroup>
     <SupportedPlatform Include="browser" />
