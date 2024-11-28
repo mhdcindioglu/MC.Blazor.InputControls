@@ -1,16 +1,17 @@
 ﻿@using System.Diagnostics.CodeAnalysis
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
 @typeparam TValue
 @inherits InputBase<TValue>
 @inject IJSRuntime JS
 @if (editing)
 {
-    <input @ref="@inputElement" @bind-value="@Value" type="number" class="@CssClass" @onblur="EndEditing" id="@ID" style="@Style" />
+    <InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}")" @onblur="EndEditing" id="@ID" style="@Style" />
 }
 else
 {
-    <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString()}") @CssClass">@FormatValueAsString(Value)</span>
+    <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass">@FormatValueAsString(Value)</span>
 }
 
 
@@ -18,14 +19,13 @@ else
     [Parameter] public string? Format { get; set; } = "N0";
     [Parameter] public new string? CssClass { get; set; } = "form-control";
     [Parameter] public string? Style { get; set; }
-    [Parameter] public Align? Align { get; set; } = InputControls.Align.Start;
+    [Parameter] public Align Align { get; set; } = InputControls.Align.Start;
     [Parameter] public string? ID { get; set; }
 
     protected override void OnInitialized()
     {
         ID = ID ?? Guid.NewGuid().ToString();
     }
-    ElementReference inputElement;
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
     /// </summary>
@@ -96,5 +96,11 @@ else
     void EndEditing()
     {
         editing = false;
+    }
+
+    async Task OnValueChanged(TValue? val)
+    {
+        Value = val;
+        await ValueChanged.InvokeAsync(Value);
     }
 }
