@@ -1,0 +1,25 @@
+<Project Sdk="Microsoft.NET.Sdk.Razor">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+
+    <PackageId>MC.Blazor.InputControls</PackageId>
+    <Version>1.0.0</Version>
+    <Authors>Muhammed Cindioglu</Authors>
+    <Company>Cindioglu Solutions</Company>
+    <Description>MC Blazor Input Controls Components.</Description>
+    <PackageTags>blazor;component;input;controls;</PackageTags>
+    <RepositoryUrl>https://github.com/mhdcindioglu/MC.Blazor.InputControls</RepositoryUrl>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <ItemGroup>
+    <SupportedPlatform Include="browser" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+  </ItemGroup>
+
+</Project>
