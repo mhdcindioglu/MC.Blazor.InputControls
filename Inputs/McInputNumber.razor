@@ -2,25 +2,33 @@
 @using System.Globalization
 @using Microsoft.AspNetCore.Components.Forms
 @using Microsoft.JSInterop
-@typeparam TValue
+@using System.Numerics
+@typeparam TValue where TValue : INumber<TValue>
 @inherits InputBase<TValue>
 @inject IJSRuntime JS
 @if (editing)
 {
-    <InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}")" @onblur="EndEditing" id="@ID" style="@Style" />
+    <InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
 }
 else
 {
     <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass">@FormatValueAsString(Value)</span>
 }
 
-
 @code {
     [Parameter] public string? Format { get; set; } = "N0";
     [Parameter] public new string? CssClass { get; set; } = "form-control";
     [Parameter] public string? Style { get; set; }
     [Parameter] public Align Align { get; set; } = InputControls.Align.Start;
+    [Parameter] public TValue Min { get; set; }
+    [Parameter] public TValue Max { get; set; }
     [Parameter] public string? ID { get; set; }
+
+    public McInputNumber()
+    {
+        Min = Min ?? GetMinValue();
+        Max = Max ?? GetMaxValue();
+    }
 
     protected override void OnInitialized()
     {
@@ -86,6 +94,24 @@ else
         }
     }
 
+    public TValue GetMinValue()
+    {
+        var minValueProperty = typeof(TValue).GetProperty("MinValue");
+        if (minValueProperty != null)
+            return (TValue)minValueProperty.GetValue(null);
+
+        throw new InvalidOperationException($"MinValue is not defined for {typeof(TValue).Name}");
+    }
+
+    public TValue GetMaxValue()
+    {
+        var minValueProperty = typeof(TValue).GetProperty("MaxValue");
+        if (minValueProperty != null)
+            return (TValue)minValueProperty.GetValue(null);
+
+        throw new InvalidOperationException($"MaxValue is not defined for {typeof(TValue).Name}");
+    }
+
     async Task StartEditing()
     {
         editing = true;
@@ -98,8 +124,13 @@ else
         editing = false;
     }
 
-    async Task OnValueChanged(TValue? val)
+    async Task OnValueChanged(TValue val)
     {
+        if (val > Max)
+            val = Max;
+        if (val < Min)
+            val = Min;
+
         Value = val;
         await ValueChanged.InvokeAsync(Value);
     }
