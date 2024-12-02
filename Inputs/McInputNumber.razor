@@ -6,14 +6,9 @@
 @typeparam TValue where TValue : INumber<TValue>
 @inherits InputBase<TValue>
 @inject IJSRuntime JS
-@if (editing)
-{
-    <InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
-}
-else
-{
-    <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass">@FormatValueAsString(Value)</span>
-}
+
+<InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}{(editing ? null : " d-none")}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
+<span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass @(editing ? "d-none" : null)">@FormatValueAsString(Value)</span>
 
 @code {
     [Parameter] public string? Format { get; set; } = "N0";
