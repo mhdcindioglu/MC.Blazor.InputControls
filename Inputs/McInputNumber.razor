@@ -15,26 +15,17 @@
     [Parameter] public new string? CssClass { get; set; } = "form-control";
     [Parameter] public string? Style { get; set; }
     [Parameter] public Align Align { get; set; } = InputControls.Align.Start;
-    [Parameter] public TValue Min { get; set; }
-    [Parameter] public TValue Max { get; set; }
+    [Parameter] public TValue? Min { get; set; } = default(TValue);
+    [Parameter] public TValue? Max { get; set; } = default(TValue);
     [Parameter] public bool Disabled { get; set; }
-    [Parameter] public string ID { get; set; }
+    [Parameter] public string? ID { get; set; }
 
-    public McInputNumber()
+    protected override void OnInitialized()
     {
         ID = ID ?? Guid.NewGuid().ToString();
-        Min = Min ?? GetMinValue() ?? TValue.Zero;
-        Max = Max ?? GetMaxValue() ?? typeof(TValue).Name switch
-        {
-            "Int16" => (TValue)(object)short.MaxValue,
-            "Int32" => (TValue)(object)int.MaxValue,
-            "Int64" => (TValue)(object)long.MaxValue,
-            "Double" => (TValue)(object)double.MaxValue,
-            "Decimal" => (TValue)(object)decimal.MaxValue,
-            _ => throw new InvalidOperationException($"Unsupported type {typeof(TValue).Name}")
-        };
+        if (Min == default(TValue)) Min = GetMinValue();
+        if (Max == default(TValue)) Max = GetMaxValue();
     }
-
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
     /// </summary>
@@ -95,23 +86,25 @@
         }
     }
 
-    private static TValue? GetMinValue()
+    private static TValue? GetMinValue() => typeof(TValue).Name switch
     {
-        var minValueProperty = typeof(TValue).GetProperty("MinValue");
-        if (minValueProperty != null)
-            return (TValue?)minValueProperty.GetValue(null);
+        "Int16" => (TValue)(object)short.MinValue,
+        "Int32" => (TValue)(object)int.MinValue,
+        "Int64" => (TValue)(object)long.MinValue,
+        "Double" => (TValue)(object)double.MinValue,
+        "Decimal" => (TValue)(object)decimal.MinValue,
+        _ => throw new InvalidOperationException($"Unsupported type {typeof(TValue).Name}")
+    };
 
-        throw new InvalidOperationException($"MinValue is not defined for {typeof(TValue).Name}");
-    }
-
-    private static TValue? GetMaxValue()
+    private static TValue GetMaxValue() => typeof(TValue).Name switch
     {
-        var maxValueProperty = typeof(TValue).GetProperty("MaxValue");
-        if (maxValueProperty != null)
-            return (TValue?)maxValueProperty.GetValue(null);
-
-        throw new InvalidOperationException($"MaxValue is not defined for {typeof(TValue).Name}");
-    }
+        "Int16" => (TValue)(object)short.MaxValue,
+        "Int32" => (TValue)(object)int.MaxValue,
+        "Int64" => (TValue)(object)long.MaxValue,
+        "Double" => (TValue)(object)double.MaxValue,
+        "Decimal" => (TValue)(object)decimal.MaxValue,
+        _ => throw new InvalidOperationException($"Unsupported type {typeof(TValue).Name}")
+    };
 
     async Task StartEditing()
     {
