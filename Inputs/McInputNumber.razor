@@ -7,7 +7,7 @@
 @inherits InputBase<TValue>
 @inject IJSRuntime JS
 
-<InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" class="@($"text-{Align.ToString().ToLower()} {CssClass}{(editing ? null : " d-none")}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
+<InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" disabled="@Disabled" class="@($"text-{Align.ToString().ToLower()} {CssClass}{(editing ? null : " d-none")}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
 <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass @(editing ? "d-none" : null)">@FormatValueAsString(Value)</span>
 
 @code {
@@ -17,18 +17,24 @@
     [Parameter] public Align Align { get; set; } = InputControls.Align.Start;
     [Parameter] public TValue Min { get; set; }
     [Parameter] public TValue Max { get; set; }
-    [Parameter] public string? ID { get; set; }
+    [Parameter] public bool Disabled { get; set; }
+    [Parameter] public string ID { get; set; }
 
     public McInputNumber()
     {
-        Min = Min ?? GetMinValue();
-        Max = Max ?? GetMaxValue();
+        ID = ID ?? Guid.NewGuid().ToString();
+        Min = Min ?? GetMinValue() ?? TValue.Zero;
+        Max = Max ?? GetMaxValue() ?? typeof(TValue).Name switch
+        {
+            "Int16" => (TValue)(object)short.MaxValue,
+            "Int32" => (TValue)(object)int.MaxValue,
+            "Int64" => (TValue)(object)long.MaxValue,
+            "Double" => (TValue)(object)double.MaxValue,
+            "Decimal" => (TValue)(object)decimal.MaxValue,
+            _ => throw new InvalidOperationException($"Unsupported type {typeof(TValue).Name}")
+        };
     }
 
-    protected override void OnInitialized()
-    {
-        ID = ID ?? Guid.NewGuid().ToString();
-    }
     /// <summary>
     /// Gets or sets the error message used when displaying an a parsing error.
     /// </summary>
@@ -89,26 +95,28 @@
         }
     }
 
-    public TValue GetMinValue()
+    private static TValue? GetMinValue()
     {
         var minValueProperty = typeof(TValue).GetProperty("MinValue");
         if (minValueProperty != null)
-            return (TValue)minValueProperty.GetValue(null);
+            return (TValue?)minValueProperty.GetValue(null);
 
         throw new InvalidOperationException($"MinValue is not defined for {typeof(TValue).Name}");
     }
 
-    public TValue GetMaxValue()
+    private static TValue? GetMaxValue()
     {
-        var minValueProperty = typeof(TValue).GetProperty("MaxValue");
-        if (minValueProperty != null)
-            return (TValue)minValueProperty.GetValue(null);
+        var maxValueProperty = typeof(TValue).GetProperty("MaxValue");
+        if (maxValueProperty != null)
+            return (TValue?)maxValueProperty.GetValue(null);
 
         throw new InvalidOperationException($"MaxValue is not defined for {typeof(TValue).Name}");
     }
 
     async Task StartEditing()
     {
+        if (Disabled) return;
+
         editing = true;
         await Task.Delay(100);
         await JS.InvokeVoidAsync("selectAll", ID);
