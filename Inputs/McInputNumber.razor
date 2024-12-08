@@ -19,6 +19,7 @@
     [Parameter] public TValue? Max { get; set; } = default(TValue);
     [Parameter] public bool Disabled { get; set; }
     [Parameter] public string? ID { get; set; }
+    bool Percentage => !string.IsNullOrEmpty(Format) && Format!.ToLower().StartsWith("p");
 
     protected override void OnInitialized()
     {
@@ -67,19 +68,19 @@
                 return null;
 
             case int @int:
-                return Convert.ToInt32(@int, culture).ToString(Format);
+                return Percentage ? Convert.ToInt32(@int / 100, culture).ToString(Format) : Convert.ToInt32(@int, culture).ToString(Format);
 
             case long @long:
-                return Convert.ToInt64(@long, culture).ToString(Format);
+                return Percentage ? Convert.ToInt64(@long / 100, culture).ToString(Format) : Convert.ToInt64(@long, culture).ToString(Format);
 
             case short @short:
-                return Convert.ToInt16(@short, culture).ToString(Format);
+                return Percentage ? Convert.ToInt16(@short / 100, culture).ToString(Format) : Convert.ToInt16(@short, culture).ToString(Format);
 
             case double @double:
-                return Convert.ToDouble(@double, culture).ToString(Format);
+                return Percentage ? Convert.ToDouble(@double / 100, culture).ToString(Format) : Convert.ToDouble(@double, culture).ToString(Format);
 
             case decimal @decimal:
-                return Convert.ToDecimal(@decimal, culture).ToString(Format);
+                return Percentage ? Convert.ToDecimal(@decimal / 100, culture).ToString(Format) : Convert.ToDecimal(@decimal, culture).ToString(Format);
 
             default:
                 throw new InvalidOperationException($"Unsupported type {value.GetType()}");
@@ -122,9 +123,9 @@
 
     async Task OnValueChanged(TValue val)
     {
-        if (val > Max)
+        if (Max != null && val > Max)
             val = Max;
-        if (val < Min)
+        if (Min != null && val < Min)
             val = Min;
 
         Value = val;
