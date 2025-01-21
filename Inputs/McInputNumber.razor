@@ -7,17 +7,36 @@
 @inherits InputBase<TValue>
 @inject IJSRuntime JS
 
-<InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged" disabled="@Disabled" class="@($"text-{Align.ToString().ToLower()} {CssClass}{(editing ? null : " d-none")}")" @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style" />
+<InputNumber TValue="TValue" Value="@Value" ValueExpression="@(() => Value)" ValueChanged="OnValueChanged"
+             disabled="@Disabled" class="@($"text-{Align.ToString().ToLower()} {CssClass}{(editing ? null : " d-none")}{(HideSpinner ? " no-spinners" : null)}")"
+             @onblur="EndEditing" min="@Min" max="@Max" id="@ID" style="@Style"
+             @onkeypress="OnKeyPress" />
 <span @onclick="StartEditing" class="text-nowrap @($"text-{Align.ToString().ToLower()}") @CssClass @(editing ? "d-none" : null)">@FormatValueAsString(Value)</span>
+@if (HideSpinner)
+{
+    <style>
+        @* For Chrome, Safari, Edge, Opera *@
+        input[type=number].no-spinners::-webkit-inner-spin-button,
+        input[type=number].no-spinners::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
 
+        @* For Firefox *@
+        input[type=number].no-spinners {
+            -moz-appearance: textfield;
+        }
+    </style>
+}
 @code {
     [Parameter] public string? Format { get; set; } = "N0";
     [Parameter] public new string? CssClass { get; set; } = "form-control";
     [Parameter] public string? Style { get; set; }
     [Parameter] public Align Align { get; set; } = InputControls.Align.Start;
-    [Parameter] public TValue? Min { get; set; } = default(TValue);
-    [Parameter] public TValue? Max { get; set; } = default(TValue);
+    [Parameter] public TValue Min { get; set; } = default(TValue)!;
+    [Parameter] public TValue Max { get; set; } = default(TValue)!;
     [Parameter] public bool Disabled { get; set; }
+    [Parameter] public bool HideSpinner { get; set; }
     [Parameter] public string? ID { get; set; }
 
     protected override void OnInitialized()
@@ -86,7 +105,7 @@
         }
     }
 
-    private static TValue? GetMinValue() => typeof(TValue).Name switch
+    private static TValue GetMinValue() => typeof(TValue).Name switch
     {
         "Int16" => (TValue)(object)short.MinValue,
         "Int32" => (TValue)(object)int.MinValue,
@@ -129,5 +148,19 @@
 
         Value = val;
         await ValueChanged.InvokeAsync(Value);
+    }
+
+    async Task OnKeyPress(KeyboardEventArgs args)
+    {
+        if (Value == null)
+        {
+            await OnValueChanged((TValue)(object)1);
+            return;
+        }
+
+        if (args.Key == "Up")
+            await OnValueChanged(Value + (TValue)(object)1);
+        else if (args.Key == "Down")
+            await OnValueChanged(Value - (TValue)(object)1);
     }
 }
