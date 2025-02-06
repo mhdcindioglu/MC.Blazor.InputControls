@@ -1,26 +1,29 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Razor">
 
-  <PropertyGroup>
-    <TargetFramework>net9.0</TargetFramework>
-    <Nullable>enable</Nullable>
-    <ImplicitUsings>enable</ImplicitUsings>
+	<PropertyGroup>
+		<TargetFramework>net9.0</TargetFramework>
+		<Nullable>enable</Nullable>
+		<ImplicitUsings>enable</ImplicitUsings>
 
-    <PackageId>MC.Blazor.InputControls</PackageId>
-    <Version>1.0.009</Version>
-    <Authors>Muhammed Cindioglu</Authors>
-    <Company>Cindioglu Solutions</Company>
-    <Description>MC Blazor Input Controls Components.</Description>
-    <PackageTags>blazor;component;input;controls;</PackageTags>
-    <RepositoryUrl>https://github.com/mhdcindioglu/MC.Blazor.InputControls</RepositoryUrl>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <Title>MC.Blazor.InputControls</Title>
-  </PropertyGroup>
-  <ItemGroup>
-    <SupportedPlatform Include="browser" />
-  </ItemGroup>
+		<PackageId>MC.Blazor.InputControls</PackageId>
+		<Version>1.0.009</Version>
+		<Authors>Muhammed Cindioglu</Authors>
+		<Company>Cindioglu Solutions</Company>
+		<Description>MC Blazor Input Controls Components.</Description>
+		<PackageTags>blazor;component;input;controls;</PackageTags>
+		<RepositoryUrl>https://github.com/mhdcindioglu/MC.Blazor.InputControls</RepositoryUrl>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+		<Title>MC.Blazor.InputControls</Title>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageReadmeFile>README.md</PackageReadmeFile>		
+	</PropertyGroup>
+	<ItemGroup>
+		<SupportedPlatform Include="browser" />
+		<None Include="README.md" Pack="true" PackagePath="\"/>
+	</ItemGroup>
 
-  <ItemGroup>
-    <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
-  </ItemGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
+	</ItemGroup>
 
 </Project>
